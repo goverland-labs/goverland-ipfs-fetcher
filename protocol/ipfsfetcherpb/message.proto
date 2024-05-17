@@ -1,0 +1,19 @@
+syntax = "proto3";
+
+import "google/protobuf/any.proto";
+
+package storagepb;
+
+option go_package = ".;ipfsfetcherpb";
+
+service Message {
+  rpc GetByID(GetByIDRequest) returns (GetByIDResponse);
+}
+
+message GetByIDRequest {
+  string ipfs_id = 1;
+}
+
+message GetByIDResponse {
+  google.protobuf.Any raw_message = 1;
+}

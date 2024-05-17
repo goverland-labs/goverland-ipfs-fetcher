@@ -1,0 +1,7 @@
+.idea/
+.DS_Store
+/.env
+/bin/*
+/tmp/*
+/goverland-ipfs-fetcher
+/vendor
