@@ -7,6 +7,11 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [0.1.1] - 2024-06-13
+
+### Fixed
+- Fixed platform events dependency
+
 ## [0.1.0] - 2024-06-13
 
 ### Added
