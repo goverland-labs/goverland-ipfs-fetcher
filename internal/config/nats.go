@@ -12,5 +12,5 @@ type Nats struct {
 }
 
 func GenerateGroupName(subgroup string) string {
-	return fmt.Sprintf("core_storage_%s", subgroup)
+	return fmt.Sprintf("ipfs_fetcher_%s", subgroup)
 }

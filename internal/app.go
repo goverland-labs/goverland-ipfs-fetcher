@@ -15,6 +15,8 @@ import (
 	"gorm.io/gorm"
 	"gorm.io/gorm/logger"
 
+	"github.com/goverland-labs/goverland-ipfs-fetcher/internal/fetcher"
+	"github.com/goverland-labs/goverland-ipfs-fetcher/internal/ipfs"
 	"github.com/goverland-labs/goverland-ipfs-fetcher/protocol/ipfsfetcherpb"
 
 	"github.com/goverland-labs/goverland-ipfs-fetcher/internal/config"
@@ -25,10 +27,11 @@ import (
 )
 
 type Application struct {
-	sigChan <-chan os.Signal
-	manager *process.Manager
-	cfg     config.App
-	db      *gorm.DB
+	sigChan     <-chan os.Signal
+	manager     *process.Manager
+	cfg         config.App
+	db          *gorm.DB
+	ipfsService *ipfs.Service
 }
 
 func NewApplication(cfg config.App) (*Application, error) {
@@ -56,7 +59,7 @@ func (a *Application) Run() {
 
 func (a *Application) bootstrap() error {
 	initializers := []func() error{
-		//a.initDB,
+		a.initDB,
 
 		// Init Dependencies
 		a.initServices,
@@ -118,7 +121,14 @@ func (a *Application) initServices() error {
 		return err
 	}
 
-	_ = pb
+	httpFetcher := fetcher.NewFetcher()
+
+	ipfsRepo := ipfs.NewRepo(a.db)
+	ipfsService := ipfs.NewService(ipfsRepo, httpFetcher, pb)
+	a.ipfsService = ipfsService
+
+	cs := ipfs.NewConsumer(nc, ipfsService)
+	a.manager.AddWorker(process.NewCallbackWorker("ipfs-consumer", cs.Start))
 
 	err = a.initAPI()
 	if err != nil {
@@ -137,7 +147,7 @@ func (a *Application) initAPI() error {
 		authInterceptor.AuthAndIdentifyTickerFunc,
 	)
 
-	ipfsfetcherpb.RegisterMessageServer(srv, message.NewServer())
+	ipfsfetcherpb.RegisterMessageServer(srv, message.NewServer(a.ipfsService))
 
 	a.manager.AddWorker(grpcsrv.NewGrpcServerWorker("API", srv, a.cfg.InternalAPI.Bind))
 
