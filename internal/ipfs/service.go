@@ -45,7 +45,7 @@ func (s *Service) Process(_ context.Context, ipfsID, ipfsType string) error {
 		return nil
 	}
 
-	log.Info().Msgf("processings ipfs: %s", ipfsID)
+	log.Info().Msgf("processings ipfs %s with type %s", ipfsID, ipfsType)
 
 	fetchedData, err := s.fetcher.Fetch(context.TODO(), ipfsID)
 	if err != nil {
