@@ -7,4 +7,6 @@ type App struct {
 	Nats        Nats
 	DB          DB
 	InternalAPI InternalAPI
+
+	IpfsConsumersCount int `env:"IPFS_CONSUMERS_COUNT" envDefault:"1"`
 }
