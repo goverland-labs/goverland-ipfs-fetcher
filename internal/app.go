@@ -127,8 +127,10 @@ func (a *Application) initServices() error {
 	ipfsService := ipfs.NewService(ipfsRepo, httpFetcher, pb)
 	a.ipfsService = ipfsService
 
-	cs := ipfs.NewConsumer(nc, ipfsService)
-	a.manager.AddWorker(process.NewCallbackWorker("ipfs-consumer", cs.Start))
+	for i := 0; i < a.cfg.IpfsConsumersCount; i++ {
+		cs := ipfs.NewConsumer(nc, ipfsService)
+		a.manager.AddWorker(process.NewCallbackWorker(fmt.Sprintf("ipfs-consumer-%d", i), cs.Start))
+	}
 
 	err = a.initAPI()
 	if err != nil {
