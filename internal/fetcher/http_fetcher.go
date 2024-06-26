@@ -6,6 +6,11 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"time"
+
+	"golang.org/x/time/rate"
+
+	"github.com/goverland-labs/goverland-ipfs-fetcher/internal/config"
 )
 
 const (
@@ -13,15 +18,28 @@ const (
 )
 
 type Http struct {
+	limiter    *rate.Limiter
+	reqTimeout time.Duration
 }
 
 // NewFetcher creates new fetcher
-func NewFetcher() *Http {
-	return &Http{}
+func NewFetcher(httpConf config.HttpClient) *Http {
+	limiter := rate.NewLimiter(rate.Every(time.Minute/time.Duration(httpConf.RatePerMinute)), 1)
+	return &Http{
+		limiter:    limiter,
+		reqTimeout: httpConf.TimeoutMS,
+	}
 }
 
-func (f *Http) Fetch(_ context.Context, ipfsID string) (json.RawMessage, error) {
-	req, err := http.NewRequest("GET", buildIpfsUrl(ipfsID), nil)
+func (f *Http) Fetch(ctx context.Context, ipfsID string) (json.RawMessage, error) {
+	if err := f.limiter.Wait(ctx); err != nil {
+		return nil, fmt.Errorf("rate limit: %w", err)
+	}
+
+	ctx, cancel := context.WithTimeout(ctx, f.reqTimeout)
+	defer cancel()
+
+	req, err := http.NewRequestWithContext(ctx, "GET", buildIpfsUrl(ipfsID), nil)
 	if err != nil {
 		return nil, fmt.Errorf("create http request: %w", err)
 	}

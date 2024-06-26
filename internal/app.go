@@ -121,7 +121,7 @@ func (a *Application) initServices() error {
 		return err
 	}
 
-	httpFetcher := fetcher.NewFetcher()
+	httpFetcher := fetcher.NewFetcher(a.cfg.HttpClient)
 
 	ipfsRepo := ipfs.NewRepo(a.db)
 	ipfsService := ipfs.NewService(ipfsRepo, httpFetcher, pb)
