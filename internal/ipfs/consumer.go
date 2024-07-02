@@ -15,25 +15,32 @@ import (
 const (
 	groupName                = "ipfs"
 	maxPendingAckPerConsumer = 10
+	maxDeliver               = 5
 )
 
 type Consumer struct {
+	number  int
 	nc      *nats.Conn
 	service *Service
 
 	msgCreatedClient *client.Consumer[pevents.MessagePayload]
 }
 
-func NewConsumer(nc *nats.Conn, service *Service) *Consumer {
+func NewConsumer(nc *nats.Conn, service *Service, n int) *Consumer {
 	return &Consumer{
 		nc:      nc,
 		service: service,
+		number:  n,
 	}
 }
 
 func (c *Consumer) Start(ctx context.Context) error {
 	group := config.GenerateGroupName(groupName)
-	cc, err := client.NewConsumer(ctx, c.nc, group, pevents.SubjectMessageCreated, c.handler(), client.WithMaxAckPending(maxPendingAckPerConsumer))
+	cc, err := client.NewConsumer(ctx, c.nc, group, pevents.SubjectMessageCreated,
+		c.handler(),
+		client.WithMaxAckPending(maxPendingAckPerConsumer),
+		client.WithMaxDeliver(maxDeliver),
+	)
 	if err != nil {
 		return fmt.Errorf("consume for %s/%s: %w", group, pevents.SubjectMessageCreated, err)
 	}
@@ -59,11 +66,11 @@ func (c *Consumer) stop() error {
 
 func (c *Consumer) handler() pevents.MessageHandler {
 	return func(payload pevents.MessagePayload) error {
+		log.Info().Msgf("received message with ipfs: %s, consumer %d", payload.IpfsID, c.number)
+
 		err := c.service.Process(context.TODO(), payload.IpfsID, payload.Type)
 		if err != nil {
 			log.Error().Err(err).Msg("process message")
-
-			return err
 		}
 
 		return nil

@@ -128,7 +128,7 @@ func (a *Application) initServices() error {
 	a.ipfsService = ipfsService
 
 	for i := 0; i < a.cfg.IpfsConsumersCount; i++ {
-		cs := ipfs.NewConsumer(nc, ipfsService)
+		cs := ipfs.NewConsumer(nc, ipfsService, i)
 		a.manager.AddWorker(process.NewCallbackWorker(fmt.Sprintf("ipfs-consumer-%d", i), cs.Start))
 	}
 

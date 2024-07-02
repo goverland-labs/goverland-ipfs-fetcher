@@ -9,7 +9,7 @@ require (
 	github.com/golang/mock v1.6.0
 	github.com/gorilla/mux v1.8.1
 	github.com/goverland-labs/goverland-ipfs-fetcher/protocol v0.0.0
-	github.com/goverland-labs/goverland-platform-events v0.2.3
+	github.com/goverland-labs/goverland-platform-events v0.2.5
 	github.com/grpc-ecosystem/go-grpc-middleware v1.4.0
 	github.com/grpc-ecosystem/go-grpc-prometheus v1.2.0
 	github.com/nats-io/nats.go v1.30.2

@@ -7,6 +7,8 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [0.1.4] - 2024-06-25
+
 ### Added
 - Added http rate limiter
 - Request timeout for ipfs fetch
